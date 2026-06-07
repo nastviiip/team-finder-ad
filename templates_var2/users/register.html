@@ -1,28 +1,42 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block title %}Регистрация{% endblock %}
-
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/auth.css' %}">
-{% endblock %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">{% endblock %}
 
 {% block content %}
 <div class="auth-card">
     <h2>Регистрация</h2>
     <form method="post">
         {% csrf_token %}
-        <div class="name-fields">
-            <div>{{ form.name.label_tag }} {{ form.name }}</div>
-            <div>{{ form.surname.label_tag }} {{ form.surname }}</div>
+        <div class="name-fields" style="display: flex; gap: 20px;">
+            <div class="form-field" style="flex: 1;">
+                <label>Имя:</label>
+                {{ form.name }}
+            </div>
+            <div class="form-field" style="flex: 1;">
+                <label>Фамилия:</label>
+                {{ form.surname }}
+            </div>
         </div>
-        {{ form.email.label_tag }} {{ form.email }}
-        {{ form.password.label_tag }} {{ form.password }}
+
+        <div class="form-field">
+            <label>Email:</label>
+            {{ form.email }}
+        </div>
+
+        <div class="form-field">
+            <label>Пароль:</label>
+            {{ form.password }}
+        </div>
+
         {% for error in form.errors.values %}
-        <p style="color: red;">{{error}}</p>
+        <p style="color: red; font-size: 12px;">{{error}}</p>
         {% endfor %}
-        <button type="submit">Зарегистрироваться</button>
+
+        <button type="submit" class="black-button" style="width: 100%; margin-top: 20px;">Зарегистрироваться</button>
     </form>
-    <p class="auth-link">Уже есть аккаунт? <a href="{% url 'users:login' %}">Войти</a></p>
+    <p class="auth-link" style="text-align: center; margin-top: 15px;">Уже есть аккаунт? <a
+            href="{% url 'users:login' %}">Войти</a></p>
 </div>
 {% endblock %}

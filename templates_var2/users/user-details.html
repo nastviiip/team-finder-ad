@@ -7,6 +7,77 @@
 <link rel="stylesheet" href="{% static 'css/project_list.css' %}">
 <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 <link rel="stylesheet" href="{% static 'css/skills.css' %}">
+
+<!-- Добавляем стили для выравнивания навыков -->
+<style>
+    .skills-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .skill-tag {
+        display: inline-flex;
+        align-items: center;
+        background-color: #f3f4f6;
+        /* Светло-серый фон плашки */
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+        padding: 6px 14px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #111;
+    }
+
+    .remove-skill-btn {
+        background: none;
+        border: none;
+        color: #9ca3af;
+        margin-left: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        line-height: 1;
+        padding: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .remove-skill-btn:hover {
+        color: #000;
+    }
+
+    .add-skill-container {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        align-items: center;
+    }
+
+    #skill-input {
+        padding: 10px 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        width: 250px;
+        outline: none;
+    }
+
+    #skill-input:focus {
+        border-color: #000;
+    }
+
+    #add-skill-btn {
+        padding: 10px 20px;
+        white-space: nowrap;
+        margin: 0;
+    }
+
+    #no-skills-msg {
+        color: #6b7280;
+        font-size: 14px;
+    }
+</style>
 {% endblock %}
 
 {% with page_id="profile" %}
@@ -15,9 +86,9 @@
     <div class="profile-header">
         <div class="profile-info">
             {% if user.avatar %}
-                <img src="{{ user.avatar.url }}" alt="Аватар" class="profile-avatar">
+            <img src="{{ user.avatar.url }}" alt="Аватар" class="profile-avatar">
             {% else %}
-                <img src="{% static 'images/default-avatar.png' %}" alt="Аватар по умолчанию" class="profile-avatar">
+            <img src="{% static 'images/default-avatar.png' %}" alt="Аватар по умолчанию" class="profile-avatar">
             {% endif %}
             <div class="profile-details">
                 <h2 class="profile-name">{{ user.name }} {{ user.surname }}</h2>
@@ -40,20 +111,61 @@
             </div>
         </div>
         <div class="profile-actions">
-            <a href="#"
-               class="black-button black-button-share share-button"
-               data-url="/users/{{ user.id }}">
+            <a href="#" class="black-button black-button-share share-button" data-url="/users/{{ user.id }}">
                 {% include 'includes/svg/share.html' %}
             </a>
             {% if request.user.id == user.id %}
-            <a href="/users/edit-profile" class="black-button">
+            <a href="/users/edit-profile/" class="black-button">
                 {% include 'includes/svg/pen.html' %}
                 Редактировать
             </a>
-            <a href="/projects/create-project" class="black-button">
+            <a href="/projects/create-project/" class="black-button">
                 {% include 'includes/svg/plus.html' %}
                 Добавить проект
             </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- БЛОК НАВЫКОВ (Дизайн Яндекса) -->
+    <div class="skills-section" style="margin-bottom: 30px;">
+        <h3>Навыки</h3>
+        {% csrf_token %}
+
+        <div class="skills-container"
+            style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: white; padding: 20px; border-radius: 10px; border: 1px solid #eaeaea;">
+            <div id="skills-list" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                {% for skill in user.skills.all %}
+                <span class="skill-tag" id="skill-tag-{{ skill.id }}"
+                    style="display: inline-flex; align-items: center; padding: 8px 15px; border: 1px solid #ccc; border-radius: 20px; font-size: 14px; background: white;">
+                    {{ skill.name }}
+                    {% if request.user.id == user.id %}
+                    <button class="remove-skill-btn" onclick="removeSkill({{ skill.id }})"
+                        style="background:none; border:none; cursor:pointer; color: #999; margin-left:8px; font-size: 16px;">×</button>
+                    {% endif %}
+                </span>
+                {% endfor %}
+            </div>
+
+            {% if request.user.id == user.id %}
+            <!-- Пунктирная кнопка как на референсе -->
+            <button id="show-input-btn"
+                onclick="document.getElementById('add-skill-wrapper').style.display='flex'; this.style.display='none';"
+                style="display: inline-flex; align-items: center; padding: 8px 15px; border: 1px dashed #ccc; border-radius: 20px; font-size: 14px; background: white; color: #666; cursor: pointer;">
+                + Добавить навык
+            </button>
+
+            <!-- Скрытое поле ввода, которое появляется по клику -->
+            <div id="add-skill-wrapper" style="display: none; position: relative; align-items: center; gap: 10px;">
+                <input type="text" id="skill-input" placeholder="Название..." autocomplete="off"
+                    style="padding: 8px 15px; border-radius: 20px; border: 1px solid #ccc; outline: none; width: 150px;">
+                <button class="black-button" onclick="addSkill()"
+                    style="padding: 8px 15px; border-radius: 20px;">Добавить</button>
+
+                <div id="autocomplete-results"
+                    style="display: none; position: absolute; top: 40px; left: 0; background: white; border: 1px solid #ccc; border-radius: 10px; width: 200px; z-index: 100; max-height: 150px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                </div>
+            </div>
             {% endif %}
         </div>
     </div>
@@ -67,11 +179,11 @@
                 <h4><a href="/projects/{{ project.id }}">{{ project.name }}</a></h4>
                 <span class="project-status-black">
                     {% if project.status == "open" %}
-                        Открыт
+                    Открыт
                     {% elif project.status == "closed" %}
-                        Закрыт
+                    Закрыт
                     {% else %}
-                        {{ project.status }}
+                    {{ project.status }}
                     {% endif %}
                 </span>
             </div>
@@ -104,5 +216,99 @@
         {% endfor %}
     </div>
 </div>
+<script>
+    const userId = "{{ user.id }}";
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    const skillInput = document.getElementById('skill-input');
+    const autocompleteResults = document.getElementById('autocomplete-results');
+
+    // 1. АВТОЗАПОЛНЕНИЕ
+    if (skillInput) {
+        skillInput.addEventListener('input', function () {
+            const query = this.value.trim();
+            if (query.length < 1) {
+                autocompleteResults.style.display = 'none';
+                return;
+            }
+
+            // Отправляем запрос на бэкенд (твоя вьюха autocomplete_skills)
+            fetch(`/users/skills/?q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    autocompleteResults.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(skill => {
+                            const div = document.createElement('div');
+                            div.textContent = skill.name;
+                            div.style.padding = '8px 10px';
+                            div.style.cursor = 'pointer';
+                            div.style.borderBottom = '1px solid #eee';
+
+                            // При клике на подсказку - вставляем её в инпут
+                            div.onclick = function () {
+                                skillInput.value = skill.name;
+                                skillInput.dataset.skillId = skill.id; // сохраняем ID
+                                autocompleteResults.style.display = 'none';
+                            };
+                            autocompleteResults.appendChild(div);
+                        });
+                        autocompleteResults.style.display = 'block';
+                    } else {
+                        autocompleteResults.style.display = 'none';
+                    }
+                });
+        });
+
+        // Скрываем подсказки при клике вне их
+        document.addEventListener('click', function (e) {
+            if (e.target !== skillInput && e.target !== autocompleteResults) {
+                autocompleteResults.style.display = 'none';
+            }
+        });
+    }
+
+    // 2. ДОБАВЛЕНИЕ НАВЫКА
+    function addSkill() {
+        const skillName = skillInput.value.trim();
+        const skillId = skillInput.dataset.skillId; // если выбрали из подсказок
+
+        if (!skillName) return;
+
+        // Формируем тело запроса
+        const payload = skillId ? { skill_id: skillId } : { name: skillName };
+
+        fetch(`/users/${userId}/skills/add/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.added || data.created) {
+                    location.reload(); // Если успешно, просто перезагружаем страницу, чтобы навык появился
+                }
+            });
+    }
+
+    // 3. УДАЛЕНИЕ НАВЫКА
+    function removeSkill(skillId) {
+        fetch(`/users/${userId}/skills/${skillId}/remove/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    document.getElementById(`skill-tag-${skillId}`).remove(); // Убираем навык с экрана
+                }
+            });
+    }
+</script>
 {% endblock %}
 {% endwith %}
