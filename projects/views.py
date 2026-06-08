@@ -74,3 +74,9 @@ def toggle_participate(request, project_id):
         project.participants.add(request.user)
 
     return redirect("project_details", project_id=project.id)
+
+
+def project_details(request, project_id):
+    """Детальная страница проекта"""
+    project = get_object_or_404(Project, id=project_id)
+    return render(request, "projects/project-details.html", {"project": project})
