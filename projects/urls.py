@@ -1,5 +1,8 @@
 from . import views
+
 from django.urls import path  # type: ignore[import]
+
+app_name = "projects"
 
 urlpatterns = [
     path("list/", views.project_list, name="project_list"),

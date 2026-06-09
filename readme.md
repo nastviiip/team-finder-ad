@@ -6,6 +6,7 @@ TeamFinder — это веб-платформа для поиска едином
 
 - **Попова Анастасия Павловна**
 - **GitHub:** [nastviiip](https://github.com/nastviiip)
+- **Email:** [ana0707@gmail.com](mailto:ana0707@gmail.com)
 
 ## Техно-стек
 

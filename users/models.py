@@ -4,11 +4,11 @@ from django.contrib.auth.models import (
     PermissionsMixin,
     BaseUserManager,
 )
-from team_finder.constants import USER_NAME_MAX_LEN, PHONE_MAX_LEN, ABOUT_MAX_LEN
+from team_finder.constants import USER_NAME_MAX_LEN, PHONE_MAX_LEN, ABOUT_MAX_LEN, SKILL_NAME_MAX_LEN
 
 
 class Skill(models.Model):
-    name = models.CharField("Название", max_length=124, unique=True)
+    name = models.CharField("Название", max_length=SKILL_NAME_MAX_LEN, unique=True)
 
     class Meta:
         verbose_name = "Навык"
@@ -49,7 +49,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
-        ordering = ["id"]
+        ordering = ["email"]
 
     skills = models.ManyToManyField(Skill, related_name="users", blank=True)
 

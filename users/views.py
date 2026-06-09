@@ -1,10 +1,10 @@
+from http import HTTPStatus
+import json
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import JsonResponse
-from http import HTTPStatus
-import json
-
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -18,7 +18,7 @@ from .forms import UserRegistrationForm
 def register_view(request):
     form = UserRegistrationForm(request.POST or None)
 
-    if request.method == "GET" or not form.is_valid():
+    if not form.is_valid():
         return render(request, "users/register.html", {"form": form})
 
     user = form.save()
@@ -29,7 +29,7 @@ def register_view(request):
 def login_view(request):
     form = AuthenticationForm(request, data=request.POST or None)
 
-    if request.method == "GET" or not form.is_valid():
+    if not form.is_valid():
         return render(request, "users/login.html", {"form": form})
 
     user = form.get_user()
@@ -48,7 +48,7 @@ def edit_profile(request):
         request.POST or None, request.FILES or None, instance=request.user
     )
 
-    if request.method == "GET" or not form.is_valid():
+    if not form.is_valid():
         return render(request, "users/edit_profile.html", {"form": form})
 
     form.save()
@@ -56,7 +56,7 @@ def edit_profile(request):
 
 
 def user_list(request):
-    users = User.objects.all().order_by("id")
+    users = User.objects.all()
 
     skill_filter = request.GET.get("skill")
 
@@ -91,7 +91,10 @@ def autocomplete_skills(request):
 def add_skill(request, user_id):
     """Добавление навыка пользователю"""
     if request.user.id != user_id:
-        return JsonResponse({"error": "Доступ запрещен"}, status=403)
+        return JsonResponse(
+            {"error": "Вы не можете добавлять навыки другим пользователям"},
+            status=HTTPStatus.FORBIDDEN,
+        )
 
     if request.method == "POST":
         try:
@@ -146,7 +149,7 @@ def remove_skill(request, user_id, skill_id):
 def change_password_view(request):
     form = PasswordChangeForm(user=request.user, data=request.POST or None)
 
-    if request.method == "GET" or not form.is_valid():
+    if not form.is_valid():
         return render(request, "users/change_password.html", {"form": form})
 
     form.save()

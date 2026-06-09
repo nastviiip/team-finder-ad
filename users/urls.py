@@ -1,4 +1,5 @@
 from django.urls import path
+
 from . import views
 
 app_name = 'users'
@@ -10,7 +11,6 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     # Список пользователей
     path("list/", views.user_list, name="user_list"),
-    # Навыки (Особенность Варианта 2)
     path(
         "skills/", views.autocomplete_skills, name="autocomplete_skills"
     ),  # GET запрос для автодополнения

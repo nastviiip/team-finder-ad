@@ -18,8 +18,11 @@ def validate_github_url(value):
     return value
 
 
-def get_paginated_page(request, queryset):
-    """Единая функция для пагинации на всём сайте"""
-    paginator = Paginator(queryset, PAGE_SIZE)
+def get_paginated_page(request, queryset, page_size=PAGE_SIZE):
+    """
+    Единая функция для пагинации на всём сайте.
+    page_size берется из констант по умолчанию, но его можно переопределить.
+    """
+    paginator = Paginator(queryset, page_size)
     page_number = request.GET.get("page")
     return paginator.get_page(page_number)

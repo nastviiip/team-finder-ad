@@ -1,13 +1,14 @@
+from http import HTTPStatus
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
-from http import HTTPStatus
 
 from .models import Project
 from .forms import ProjectForm
 from team_finder.utils import get_paginated_page
-from team_finder.constants import STATUS_CLOSED
+from team_finder.constants import STATUS_CLOSED, STATUS_OPEN
 
 
 def project_list(request):
@@ -20,7 +21,7 @@ def project_list(request):
 def create_project(request):
     form = ProjectForm(request.POST or None)
 
-    if request.method == "GET" or not form.is_valid():
+    if not form.is_valid():
         return render(
             request, "projects/create-project.html", {"form": form, "is_edit": False}
         )
@@ -40,8 +41,7 @@ def edit_project(request, project_id):
 
     form = ProjectForm(request.POST or None, instance=project)
 
-    # Ранний возврат:
-    if request.method == "GET" or not form.is_valid():
+    if not form.is_valid():
         return render(
             request, "projects/create-project.html", {"form": form, "is_edit": True}
         )
@@ -54,13 +54,17 @@ def edit_project(request, project_id):
 @require_POST
 def complete_project(request, project_id):
     project = get_object_or_404(Project, id=project_id)
-    if request.user == project.owner and project.status == "open":
-        project.status = STATUS_CLOSED
-        project.save()
+
+    if request.user != project.owner or project.status != STATUS_OPEN:
         return JsonResponse(
-            {"status": "ok", "project_status": project.status}, status=HTTPStatus.OK
+            {"error": "Неверный запрос или нет прав"}, status=HTTPStatus.BAD_REQUEST
         )
-    return JsonResponse({"error": "Bad request"}, status=HTTPStatus.BAD_REQUEST)
+
+    project.status = STATUS_CLOSED
+    project.save()
+    return JsonResponse(
+        {"status": "ok", "project_status": project.status}, status=HTTPStatus.OK
+    )
 
 
 @login_required
@@ -73,7 +77,7 @@ def toggle_participate(request, project_id):
     else:
         project.participants.add(request.user)
 
-    return redirect("project_details", project_id=project.id)
+    return JsonResponse({"status": "ok"}, status=HTTPStatus.OK)
 
 
 def project_details(request, project_id):

@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', lambda request: redirect('project_list', permanent=False)), # Редирект с корня
+    path('', lambda request: redirect('projects:project_list', permanent=False)),
     path('projects/', include('projects.urls')),
     path('users/', include('users.urls')),
 ]

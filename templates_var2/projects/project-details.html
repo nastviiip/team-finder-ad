@@ -68,16 +68,30 @@
             {% else %}
             {% if user.is_authenticated %}
             {% if project.status == "open" %}
-            <form action="/projects/{{ project.id }}/toggle-participate/" method="POST" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="black-button">
-                    {% if request.user in project.participants.all %}
-                    Отказаться от участия
-                    {% else %}
-                    Участвовать
-                    {% endif %}
-                </button>
-            </form>
+
+            <button id="my-participate-btn" class="black-button" onclick="toggleParticipate({{ project.id }})">
+                {% if request.user in project.participants.all %}
+                Отказаться от участия
+                {% else %}
+                Участвовать
+                {% endif %}
+            </button>
+
+            <script>
+                function toggleParticipate(projectId) {
+                    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(`/projects/${projectId}/toggle-participate/`, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': csrf }
+                    }).then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'ok') {
+                                location.reload();
+                            }
+                        });
+                }
+            </script>
+
             {% endif %}
             {% endif %}
             {% endif %}
